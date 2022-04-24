@@ -2,18 +2,35 @@
 const xlsx = require('xlsx');
 const fs = require('fs');
 const { parse } = require('path');
+const express=require('express');
+const app=express();
 
 //reading from excel file
 const workbook = xlsx.readFile('./test.xlsx'); //excel file name goes here
 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-//reading from json fike
-var jsonObject=JSON.parse(fs.readFileSync('excel.json', 'utf8')); //json config file name goes here
-// var keys = Object.keys( jsonObject );
-
+//To get the number of rows
+var range = xlsx.utils.decode_range(worksheet['!ref']);
+var num_rows = range.e.r - range.s.r ;
 
 let posts = [];
 let post = {};
+
+
+//To ensure row count doesn't exceed 1000 and if does then send 404 error
+if(num_rows>1000){
+    app.use((req, res, next) => {
+        res.status(404);
+        if (req.accepts('json')) {
+            res.send({ error: 'Not found' });
+            return;
+          }
+      });
+}
+else{
+//reading from json fike
+var jsonObject=JSON.parse(fs.readFileSync('excel1.json', 'utf8')); //json config file name goes here
+// var keys = Object.keys( jsonObject );
 
 
 //looping through each cell in the excel file
@@ -36,3 +53,5 @@ for (let cell in worksheet) {
 }
 
 console.log(posts);
+}
+
